@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>루나의 운동일지</title>
+<link rel="icon" href="images/luna-face.png" type="image/png" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<style>
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+}
+
+:root{
+  --cream:      #EDE6D8;
+  --cream-soft: #F6F1E7;
+  --white:      #FFFDF9;
+  --cocoa:      #3B3129;
+  --cocoa-soft: #7A6C5D;
+  --line:       #DCD2BE;
+  --blue:       #6E8299;   /* 루나 눈 색 */
+  --blue-soft:  #E4EAEE;
+  --sage:       #7F9470;   /* 완료 표시 */
+  --sage-soft:  #E6ECE1;
+  --radius-lg:  22px;
+  --radius-md:  14px;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+  background:var(--cream);
+  color:var(--cocoa);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+}
+
+.app{
+  width:100%;
+  max-width:480px;
+  min-height:100vh;
+  background:var(--cream);
+  padding-bottom:120px;
+  position:relative;
+}
+
+/* ---------- Hero ---------- */
+.hero{
+  background:var(--cocoa);
+  color:var(--cream-soft);
+  border-radius:0 0 28px 28px;
+  padding:22px 22px 26px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  position:relative;
+  overflow:hidden;
+}
+.hero-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.hero-name{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.hero-name img{
+  width:38px; height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,255,255,.35);
+}
+.hero-name-text h1{
+  font-size:17px;
+  font-weight:700;
+  margin:0;
+  letter-spacing:-0.2px;
+}
+.hero-name-text p{
+  font-size:12px;
+  color:#C9BDA9;
+  margin:1px 0 0;
+}
+.hero-date{
+  font-size:12px;
+  color:#C9BDA9;
+  text-align:right;
+}
+
+.hero-stats-row{
+  position:relative;
+  min-height:104px;
+  display:flex;
+  align-items:flex-start;
+}
+.hero-progress{
+  padding-right:96px;
+  flex:1;
+}
+.hero-progress-num{
+  font-size:36px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:-0.5px;
+}
+.hero-progress-num span{ font-size:18px; font-weight:600; color:#C9BDA9; }
+.hero-progress-label{
+  font-size:12px;
+  color:#C9BDA9;
+  margin-top:6px;
+}
+.hero-bar{
+  height:6px;
+  border-radius:99px;
+  background:rgba(255,255,255,.14);
+  overflow:hidden;
+  margin-top:12px;
+  max-width:200px;
+}
+.hero-bar-fill{
+  height:100%;
+  background:var(--blue);
+  border-radius:99px;
+  width:0%;
+  transition:width .4s ease;
+}
+.hero-character{
+  position:absolute;
+  right:-4px;
+  bottom:-18px;
+  width:126px;
+  height:auto;
+  pointer-events:none;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.25));
+}
+
+/* ---------- Goals strip ---------- */
+.goals{
+  display:flex;
+  gap:8px;
+  padding:16px 20px 4px;
+  overflow-x:auto;
+}
+.goal-chip{
+  flex:0 0 auto;
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:99px;
+  padding:8px 14px;
+  font-size:12.5px;
+  color:var(--cocoa-soft);
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.goal-chip b{ color:var(--cocoa); font-weight:700; }
+.goal-chip .num{ color:var(--blue); font-weight:700; }
+
+/* ---------- Checklist ---------- */
+.checklist{ padding:8px 20px 0; }
+
+.section{ margin-top:22px; }
+.section-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:8px;
+  padding:0 2px;
+}
+.section-head h2{
+  font-size:14.5px;
+  font-weight:700;
+  margin:0;
+  color:var(--cocoa);
+}
+.section-head .count{
+  font-size:12px;
+  color:var(--cocoa-soft);
+}
+
+.item-list{
+  background:var(--white);
+  border-radius:var(--radius-md);
+  border:1px solid var(--line);
+  overflow:hidden;
+}
+.item-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:13px 14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+  user-select:none;
+}
+.item-row:last-child{ border-bottom:none; }
+.item-row.checked{ background:var(--sage-soft); }
+
+.checkbox{
+  width:22px; height:22px;
+  border-radius:7px;
+  border:2px solid #C9BEA9;
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.item-row.checked .checkbox{
+  background:var(--sage);
+  border-color:var(--sage);
+  transform:scale(1.04);
+}
+.checkbox svg{
+  width:13px; height:13px;
+  opacity:0;
+  transform:scale(.5);
+  transition:opacity .15s ease, transform .15s ease;
+}
+.item-row.checked .checkbox svg{ opacity:1; transform:scale(1); }
+
+.item-text{ flex:1; min-width:0; }
+.item-text .name{
+  font-size:14.5px;
+  font-weight:600;
+  color:var(--cocoa);
+}
+.item-row.checked .item-text .name{
+  color:var(--cocoa-soft);
+  text-decoration:line-through;
+  text-decoration-color:#B9AE99;
+}
+.item-text .detail{
+  font-size:12px;
+  color:var(--cocoa-soft);
+  margin-top:1px;
+}
+
+.empty-state{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--cocoa-soft);
+  font-size:13px;
+}
+
+/* ---------- FAB ---------- */
+.fab{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  transform:translateX(-50%);
+  width:calc(100% - 40px);
+  max-width:440px;
+  background:var(--cocoa);
+  color:var(--cream-soft);
+  border:none;
+  border-radius:99px;
+  padding:15px 20px;
+  font-size:14.5px;
+  font-weight:700;
+  font-family:inherit;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  box-shadow:0 10px 24px rgba(59,49,41,.28);
+  cursor:pointer;
+}
+
+/* ---------- Bottom sheet ---------- */
+.sheet-backdrop{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.4);
+  opacity:0; pointer-events:none;
+  transition:opacity .2s ease;
+  z-index:10;
+}
+.sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+
+.sheet{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  transform:translate(-50%, 100%);
+  width:100%;
+  max-width:480px;
+  background:var(--cream-soft);
+  border-radius:24px 24px 0 0;
+  padding:22px 22px calc(24px + env(safe-area-inset-bottom));
+  transition:transform .28s cubic-bezier(.32,.72,0,1);
+  z-index:11;
+}
+.sheet.open{ transform:translate(-50%, 0); }
+
+.sheet-handle{
+  width:36px; height:4px;
+  background:var(--line);
+  border-radius:99px;
+  margin:0 auto 16px;
+}
+.sheet h3{ margin:0 0 4px; font-size:16px; font-weight:700; }
+.sheet p.sub{ margin:0 0 18px; font-size:12.5px; color:var(--cocoa-soft); }
+
+.time-toggle{
+  display:flex; gap:8px; margin-bottom:16px;
+}
+.time-toggle button{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:1.5px solid var(--line);
+  background:var(--white);
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--cocoa-soft);
+  cursor:pointer;
+}
+.time-toggle button.active{
+  border-color:var(--blue);
+  background:var(--blue-soft);
+  color:var(--blue);
+}
+
+.weight-input-wrap{
+  display:flex; align-items:baseline; gap:6px;
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  background:var(--white);
+}
+.weight-input-wrap input{
+  border:none; outline:none;
+  font-family:inherit;
+  font-size:26px;
+  font-weight:700;
+  width:100%;
+  background:transparent;
+  color:var(--cocoa);
+}
+.weight-input-wrap span{ font-size:14px; color:var(--cocoa-soft); font-weight:600; }
+
+.sheet-save{
+  width:100%;
+  background:var(--cocoa);
+  color:var(--cream-soft);
+  border:none;
+  border-radius:14px;
+  padding:15px;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.sheet-cancel{
+  width:100%;
+  background:none;
+  border:none;
+  padding:12px;
+  font-family:inherit;
+  font-size:13px;
+  color:var(--cocoa-soft);
+  cursor:pointer;
+}
+
+.toast{
+  position:fixed;
+  left:50%; bottom:100px;
+  transform:translate(-50%, 12px);
+  background:var(--cocoa);
+  color:var(--cream-soft);
+  padding:10px 18px;
+  border-radius:99px;
+  font-size:13px;
+  opacity:0;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:20;
+  pointer-events:none;
+  white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="hero" id="hero">
+    <div class="hero-top">
+      <div class="hero-name">
+        <img src="images/luna-face.png" alt="루나" />
+        <div class="hero-name-text">
+          <h1>루나의 운동일지</h1>
+          <p>오늘도 같이 해볼까?</p>
+        </div>
+      </div>
+      <div class="hero-date" id="heroDate">-</div>
+    </div>
+
+    <div class="hero-stats-row">
+      <div class="hero-progress">
+        <div class="hero-progress-num"><span id="doneCount">0</span><span> / <span id="totalCount">0</span></span></div>
+        <div class="hero-progress-label">오늘 완료</div>
+        <div class="hero-bar"><div class="hero-bar-fill" id="heroBarFill"></div></div>
+      </div>
+      <img class="hero-character" src="images/luna-face.png" alt="루나" />
+    </div>
+  </header>
+
+  <section class="goals" id="goals"></section>
+
+  <main class="checklist" id="checklist">
+    <div class="empty-state">불러오는 중…</div>
+  </main>
+
+  <button class="fab" id="weightFab">
+    <span>⚖️</span> 오늘 체중 기록하기
+  </button>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="weightSheet">
+  <div class="sheet-handle"></div>
+  <h3>체중 기록</h3>
+  <p class="sub">아침 기준으로 재는 게 가장 정확해요.</p>
+
+  <div class="time-toggle">
+    <button type="button" class="active" data-time="아침">아침</button>
+    <button type="button" data-time="저녁">저녁</button>
+  </div>
+
+  <div class="weight-input-wrap">
+    <input type="number" id="weightInput" inputmode="decimal" placeholder="0.0" step="0.1" />
+    <span>kg</span>
+  </div>
+
+  <button class="sheet-save" id="weightSave">저장하기</button>
+  <button class="sheet-cancel" id="weightCancel">닫기</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   설정
+   ============================================================ */
+// Apps Script 웹앱 배포 URL을 여기 붙여넣으세요.
+// 비워두면 이 브라우저(localStorage)에만 저장되는 데모 모드로 동작합니다.
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby10ll-Icaw5ucTeF7pdlZ1_WaT2ea3fIGVI2e9eq_R1bihXfoHUNxRpeDk9OMD10OW/exec';
+
+/* ============================================================
+   기본 데이터 (Item + Weekly_Plan 을 그대로 옮긴 오프라인 폴백)
+   SCRIPT_URL이 비어있거나 서버 호출이 실패하면 이 데이터로 동작합니다.
+   ============================================================ */
+const ITEMS = {
+  AM01:['아침','족저근막 스트레칭','10초 x 10회'],
+  AM02:['아침','종아리 스트레칭','30초 x 좌1/우2'],
+  WU01:['준비운동','무릎 가슴 당기기','좌/우/동시 각 20~30초'],
+  WU02:['준비운동','클램쉘','15회 x 좌2:우1세트'],
+  WU03:['준비운동','글루트 브리지','20회 x 2세트'],
+  WU04:['준비운동','한 발 글루트브리지','12회 x 좌2:우1세트'],
+  WU05:['준비운동','매달리기','20~30초 x 2세트'],
+  WU06:['준비운동','발뒤꿈치 들기','15회 x 2세트'],
+  WU07:['준비운동','발뒤꿈치 들고 버티기','15초 x 2세트'],
+  WU08:['준비운동','어깨 외회전(ㄱ자)','15회 x 2세트'],
+  A01:['상체(A)','랫풀다운','10회 x 4세트'],
+  A02:['상체(A)','시티드로우','12회 x 3세트'],
+  A03:['상체(A)','벤치프레스','8~10회 x 3세트'],
+  A04:['상체(A)','페이스풀','15회 x 3세트'],
+  A05:['상체(A)','원암 덤벨로우','12회 x 좌3:우2세트'],
+  B01:['상체(B)','시티드로우','10회 x 4세트'],
+  B02:['상체(B)','인클라인 벤치프레스','10회 x 3세트'],
+  B03:['상체(B)','랫풀다운','12회 x 3세트'],
+  B04:['상체(B)','페이스풀','15회 x 3세트'],
+  B05:['상체(B)','사이드플랭크','30초 x 좌3:우1세트'],
+  L01:['하체(A)','글루트 브리지','20회 x 3세트'],
+  L02:['하체(A)','스쿼트','10회 x 4세트'],
+  L03:['하체(A)','스탠딩 레그컬','12회 x 좌3:우2세트'],
+  L04:['하체(A)','한 발 글루트브리지','12회 x 좌3:우2세트'],
+  L05:['하체(A)','백 익스텐션','12회 x 3세트'],
+  M01:['하체(B)','힙 스러스트','12회 x 4세트'],
+  M02:['하체(B)','스텝업','10회 x 좌3:우2세트'],
+  M03:['하체(B)','레그프레스','12회 x 3세트'],
+  M04:['하체(B)','사이드라잉 힙어브덕션','15회 x 좌3세트'],
+  M05:['하체(B)','백 익스텐션','12회 x 3세트'],
+  CA01:['유산소','트레드밀','경사7/속도5 x 20~40분'],
+  CD01:['쿨다운','종아리 스트레칭','30초 x 2세트'],
+  CD02:['쿨다운','햄스트링 스트레칭','30초 x 2세트'],
+  CD03:['쿨다운','어깨/가슴 가볍게 풀기','30초 x 2세트'],
+  CD04:['쿨다운','백 익스텐션(가볍게)','15회 x 2세트'],
+  PM01:['취침 전','폼롤러 흉추 신전','10회'],
+  PM02:['취침 전','문틀 가슴 스트레칭','30초 x 2세트'],
+  PM03:['취침 전','요방형근 스트레칭','30초 x 2세트'],
+  PM04:['취침 전','턱 당기기','5초 x 10회'],
+};
+
+const WU_ALL = ['WU01','WU02','WU03','WU04','WU05','WU06','WU07','WU08'];
+const CD_ALL = ['CD01','CD02','CD03','CD04'];
+const PM_ALL = ['PM01','PM02','PM03','PM04'];
+const AM_ALL = ['AM01','AM02'];
+
+const PLAN = {
+  '월': [...AM_ALL, ...WU_ALL, 'A01','A02','A03','A04','A05', 'CA01', ...CD_ALL, ...PM_ALL],
+  '화': [...AM_ALL, ...WU_ALL, 'L01','L02','L03','L04','L05', 'CA01', ...CD_ALL, ...PM_ALL],
+  '수': [...AM_ALL, ...WU_ALL, 'CA01', ...CD_ALL, ...PM_ALL],
+  '목': [...AM_ALL, ...WU_ALL, 'B01','B02','B03','B04','B05', 'CA01', ...CD_ALL, ...PM_ALL],
+  '금': [...AM_ALL, ...WU_ALL, 'M01','M02','M03','M04','M05', 'CA01', ...CD_ALL, ...PM_ALL],
+  '토': [...AM_ALL, ...WU_ALL, 'CA01', ...CD_ALL, ...PM_ALL],
+  '일': [...AM_ALL, ...WU_ALL, 'CA01', ...CD_ALL, ...PM_ALL],
+};
+
+const GOALS = [
+  { label: '1순위', text: '자세 교정' },
+  { label: '2순위', text: '체중 감량', num: '75kg 목표' },
+  { label: '3순위', text: '워너비 체형' },
+];
+
+const DAY_NAMES = ['일','월','화','수','목','금','토'];
+
+/* ============================================================
+   상태
+   ============================================================ */
+let today = new Date();
+let dateKey = formatDateKey(today);
+let dayName = DAY_NAMES[today.getDay()];
+let currentItems = []; // [{id, category, name, detail, checked}]
+
+function formatDateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function localStorageKey(){
+  return `luna-fitness-log-${dateKey}`;
+}
+
+/* ============================================================
+   데이터 로드
+   ============================================================ */
+async function loadToday(){
+  // 1) 서버 연동 시도
+  if (SCRIPT_URL) {
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getToday&date=${dateKey}`);
+      const data = await res.json();
+      if (data && data.items) {
+        currentItems = data.items;
+        render();
+        return;
+      }
+    } catch (err) {
+      console.warn('서버 연동 실패, 로컬 데이터로 대체합니다', err);
+    }
+  }
+
+  // 2) 오프라인/데모 폴백
+  const planIds = PLAN[dayName] || [];
+  const savedChecks = JSON.parse(localStorage.getItem(localStorageKey()) || '{}');
+  currentItems = planIds.map((id, idx) => {
+    const [category, name, detail] = ITEMS[id] || ['','',''];
+    return { id, order: idx+1, category, name, detail, checked: !!savedChecks[id] };
+  });
+  render();
+}
+
+/* ============================================================
+   렌더링
+   ============================================================ */
+function render(){
+  document.getElementById('heroDate').textContent =
+    `${today.getMonth()+1}월 ${today.getDate()}일 ${dayName}요일`;
+
+  // 목표 칩
+  const goalsEl = document.getElementById('goals');
+  goalsEl.innerHTML = GOALS.map(g =>
+    `<div class="goal-chip">${g.label} <b>${g.text}</b>${g.num ? ` <span class="num">${g.num}</span>` : ''}</div>`
+  ).join('');
+
+  // 카테고리별로 묶기 (순서 유지)
+  const grouped = [];
+  const seen = {};
+  currentItems.forEach(it => {
+    if (!seen[it.category]) {
+      seen[it.category] = { category: it.category, items: [] };
+      grouped.push(seen[it.category]);
+    }
+    seen[it.category].items.push(it);
+  });
+
+  const listEl = document.getElementById('checklist');
+  if (grouped.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">오늘은 등록된 항목이 없어요.</div>';
+  } else {
+    listEl.innerHTML = grouped.map(g => {
+      const doneInGroup = g.items.filter(i => i.checked).length;
+      return `
+        <div class="section">
+          <div class="section-head">
+            <h2>${g.category}</h2>
+            <span class="count">${doneInGroup}/${g.items.length}</span>
+          </div>
+          <div class="item-list">
+            ${g.items.map(rowHtml).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 이벤트 바인딩
+  listEl.querySelectorAll('.item-row').forEach(row => {
+    row.addEventListener('click', () => toggleItem(row.dataset.id));
+  });
+
+  updateProgress();
+}
+
+function rowHtml(item){
+  return `
+    <div class="item-row ${item.checked ? 'checked' : ''}" data-id="${item.id}">
+      <div class="checkbox">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="item-text">
+        <div class="name">${item.name}</div>
+        <div class="detail">${item.detail}</div>
+      </div>
+    </div>
+  `;
+}
+
+function updateProgress(){
+  const total = currentItems.length;
+  const done = currentItems.filter(i => i.checked).length;
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('totalCount').textContent = total;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('heroBarFill').style.width = pct + '%';
+}
+
+/* ============================================================
+   체크 토글
+   ============================================================ */
+async function toggleItem(id){
+  const item = currentItems.find(i => i.id === id);
+  if (!item) return;
+  item.checked = !item.checked;
+  render();
+  showToast(item.checked ? `${item.name} 완료!` : `${item.name} 취소`);
+
+  // 로컬 저장 (오프라인 폴백 겸 즉시 반영)
+  const saved = JSON.parse(localStorage.getItem(localStorageKey()) || '{}');
+  saved[id] = item.checked;
+  localStorage.setItem(localStorageKey(), JSON.stringify(saved));
+
+  // 서버 반영 (실패해도 로컬엔 이미 저장됨)
+  if (SCRIPT_URL) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        // Apps Script는 preflight(OPTIONS)를 처리하지 못하므로
+        // text/plain으로 보내 단순 요청으로 처리합니다.
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'checkItem',
+          date: dateKey,
+          day: dayName,
+          itemId: id,
+          checked: item.checked,
+        }),
+      });
+    } catch (err) {
+      console.warn('서버 기록 실패 (로컬에는 저장됨)', err);
+    }
+  }
+}
+
+/* ============================================================
+   체중 기록 바텀시트
+   ============================================================ */
+const sheetBackdrop = document.getElementById('sheetBackdrop');
+const weightSheet = document.getElementById('weightSheet');
+let selectedTime = '아침';
+
+document.getElementById('weightFab').addEventListener('click', openSheet);
+document.getElementById('weightCancel').addEventListener('click', closeSheet);
+sheetBackdrop.addEventListener('click', closeSheet);
+
+document.querySelectorAll('.time-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.time-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTime = btn.dataset.time;
+  });
+});
+
+function openSheet(){
+  sheetBackdrop.classList.add('open');
+  weightSheet.classList.add('open');
+  setTimeout(() => document.getElementById('weightInput').focus(), 250);
+}
+function closeSheet(){
+  sheetBackdrop.classList.remove('open');
+  weightSheet.classList.remove('open');
+}
+
+document.getElementById('weightSave').addEventListener('click', async () => {
+  const val = parseFloat(document.getElementById('weightInput').value);
+  if (!val || val < 30 || val > 250) {
+    showToast('체중을 올바르게 입력해주세요');
+    return;
+  }
+
+  // 로컬 히스토리에도 저장
+  const history = JSON.parse(localStorage.getItem('luna-fitness-weight-history') || '[]');
+  history.push({ date: dateKey, timeOfDay: selectedTime, weight: val });
+  localStorage.setItem('luna-fitness-weight-history', JSON.stringify(history));
+
+  if (SCRIPT_URL) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'logWeight',
+          date: dateKey,
+          timeOfDay: selectedTime,
+          weight: val,
+        }),
+      });
+    } catch (err) {
+      console.warn('서버 기록 실패 (로컬에는 저장됨)', err);
+    }
+  }
+
+  closeSheet();
+  document.getElementById('weightInput').value = '';
+  showToast(`${selectedTime} 체중 ${val}kg 기록 완료`);
+});
+
+/* ============================================================
+   토스트
+   ============================================================ */
+let toastTimer;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+/* ============================================================
+   시작
+   ============================================================ */
+loadToday();
+</script>
+
+</body>
+</html>
