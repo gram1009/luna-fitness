@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>루나의 운동일지</title>
-<link rel="icon" href="luna-face.png" type="image/png" />
+<link rel="icon" href="luna-face.png?v=3" type="image/png" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 <style>
 @font-face {
@@ -166,6 +166,72 @@ body{
 }
 .goal-chip b{ color:var(--cocoa); font-weight:700; }
 .goal-chip .num{ color:var(--blue); font-weight:700; }
+
+/* ---------- Stats strip ---------- */
+.stats-strip{
+  margin:14px 20px 0;
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius-md);
+  padding:14px 16px 12px;
+}
+.stats-top{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.stats-title{
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--cocoa);
+}
+.stats-pct{
+  font-size:13px;
+  font-weight:700;
+  color:var(--blue);
+}
+.stats-bars{
+  display:flex;
+  gap:6px;
+  align-items:flex-end;
+  height:44px;
+}
+.stats-bar-col{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  height:100%;
+}
+.stats-bar-track{
+  flex:1;
+  width:100%;
+  max-width:20px;
+  background:var(--cream);
+  border-radius:6px;
+  display:flex;
+  align-items:flex-end;
+  overflow:hidden;
+}
+.stats-bar-fill{
+  width:100%;
+  background:var(--sage);
+  border-radius:6px;
+  min-height:3px;
+}
+.stats-bar-fill.today{ background:var(--blue); }
+.stats-bar-label{
+  font-size:10px;
+  color:var(--cocoa-soft);
+}
+.stats-streak{
+  margin-top:10px;
+  font-size:12px;
+  color:var(--cocoa-soft);
+}
+.stats-streak b{ color:var(--cocoa); }
 
 /* ---------- Checklist ---------- */
 .checklist{ padding:8px 20px 0; }
@@ -400,7 +466,7 @@ body{
   <header class="hero" id="hero">
     <div class="hero-top">
       <div class="hero-name">
-        <img src="luna-face.png" alt="루나" />
+        <img src="luna-face.png?v=3" alt="루나" />
         <div class="hero-name-text">
           <h1>루나의 운동일지</h1>
           <p>오늘도 같이 해볼까?</p>
@@ -415,11 +481,20 @@ body{
         <div class="hero-progress-label">오늘 완료</div>
         <div class="hero-bar"><div class="hero-bar-fill" id="heroBarFill"></div></div>
       </div>
-      <img class="hero-character" src="luna-face.png" alt="루나" />
+      <img class="hero-character" src="luna-face.png?v=3" alt="루나" />
     </div>
   </header>
 
   <section class="goals" id="goals"></section>
+
+  <section class="stats-strip" id="statsStrip">
+    <div class="stats-top">
+      <div class="stats-title">이번 주</div>
+      <div class="stats-pct" id="statsPct">-</div>
+    </div>
+    <div class="stats-bars" id="statsBars"></div>
+    <div class="stats-streak" id="statsStreak"></div>
+  </section>
 
   <main class="checklist" id="checklist">
     <div class="empty-state">불러오는 중…</div>
@@ -578,6 +653,78 @@ async function loadToday(){
 }
 
 /* ============================================================
+   주간 진행률 / 연속 기록일수
+   ============================================================ */
+async function loadStats(){
+  if (SCRIPT_URL) {
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getStats&days=7`);
+      const data = await res.json();
+      if (data && data.days) {
+        renderStats(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('통계 서버 연동 실패, 로컬 데이터로 대체합니다', err);
+    }
+  }
+
+  // 로컬 폴백: 최근 7일치를 localStorage에서 직접 계산
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dKey = formatDateKey(d);
+    const dName = DAY_NAMES[d.getDay()];
+    const total = (PLAN[dName] || []).length;
+    const saved = JSON.parse(localStorage.getItem(`luna-fitness-log-${dKey}`) || '{}');
+    const done = Object.values(saved).filter(Boolean).length;
+    days.push({ date: dKey, day: dName, done, total });
+  }
+  const weekDone = days.reduce((s,d) => s + d.done, 0);
+  const weekTotal = days.reduce((s,d) => s + d.total, 0);
+
+  let streak = 0;
+  for (let i = 0; i < 60; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dKey = formatDateKey(d);
+    const saved = JSON.parse(localStorage.getItem(`luna-fitness-log-${dKey}`) || '{}');
+    const done = Object.values(saved).filter(Boolean).length;
+    if (done > 0) streak++;
+    else if (i === 0) continue;
+    else break;
+  }
+
+  renderStats({ days, weekDone, weekTotal, streak });
+}
+
+function renderStats(data){
+  const pct = data.weekTotal ? Math.round((data.weekDone / data.weekTotal) * 100) : 0;
+  document.getElementById('statsPct').textContent = `${data.weekDone}/${data.weekTotal} · ${pct}%`;
+
+  const barsEl = document.getElementById('statsBars');
+  const todayKey = formatDateKey(today);
+  barsEl.innerHTML = data.days.map(d => {
+    const dPct = d.total ? Math.max(4, Math.round((d.done / d.total) * 100)) : 4;
+    const isToday = d.date === todayKey;
+    return `
+      <div class="stats-bar-col">
+        <div class="stats-bar-track">
+          <div class="stats-bar-fill ${isToday ? 'today' : ''}" style="height:${d.total ? dPct : 4}%"></div>
+        </div>
+        <div class="stats-bar-label">${d.day}</div>
+      </div>
+    `;
+  }).join('');
+
+  const streakEl = document.getElementById('statsStreak');
+  streakEl.innerHTML = data.streak > 0
+    ? `🔥 <b>${data.streak}일</b> 연속 기록 중`
+    : `오늘부터 다시 시작해봐요`;
+}
+
+/* ============================================================
    렌더링
    ============================================================ */
 function render(){
@@ -666,6 +813,7 @@ async function toggleItem(id){
   const saved = JSON.parse(localStorage.getItem(localStorageKey()) || '{}');
   saved[id] = item.checked;
   localStorage.setItem(localStorageKey(), JSON.stringify(saved));
+  loadStats();
 
   // 서버 반영 (실패해도 로컬엔 이미 저장됨)
   if (SCRIPT_URL) {
@@ -768,6 +916,7 @@ function showToast(msg){
    시작
    ============================================================ */
 loadToday();
+loadStats();
 </script>
 
 </body>
